@@ -40,9 +40,7 @@ public class Query<T> {
         }
 
         //分页对象
-        Page<T> page = new Page<>(curPage, limit);
-
-        //分页参数
+        Page<T> page = new Page<T>();
 //        params.put(Constant.PAGE, page);
 
         //排序字段
