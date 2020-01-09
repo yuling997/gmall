@@ -14,3 +14,6 @@
 #    host: 192.168.89.128
 #mybatis-plus:
 #  mapper-locations: classpath:mapper/pms/**/*.xml
+#  global-config:
+#    db-config:
+#      id-type: auto
