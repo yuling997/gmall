@@ -1,6 +1,9 @@
 package com.atguigu.gmall.pms.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +20,9 @@ import com.atguigu.gmall.pms.service.CategoryService;
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
+    @Autowired
+    private CategoryDao categoryDao;
+
     @Override
     public PageVo queryPage(QueryCondition params) {
         IPage<CategoryEntity> page = this.page(
@@ -25,6 +31,23 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         );
 
         return new PageVo(page);
+    }
+
+    @Override
+    public List<CategoryEntity> queryCategoreiesByLevelOrPid(Integer level, Long pid) {
+
+        QueryWrapper<CategoryEntity> wrapper = new QueryWrapper<>();
+
+        //分类层级查询level
+        if (level != 0){
+            wrapper.eq("cat_level",level);
+        }
+
+        //查询父id
+        if (pid != null){
+            wrapper.eq("parent_cid", pid);
+        }
+        return this.categoryDao.selectList(wrapper);
     }
 
 }
