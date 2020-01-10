@@ -34,7 +34,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         QueryWrapper<SpuInfoEntity> wrapper = new QueryWrapper<>();
 
         //判断查全站，查本类
-        if (catId != 01){
+        if (catId != 0){
             wrapper.eq("catalog_id",catId);
         }
 
