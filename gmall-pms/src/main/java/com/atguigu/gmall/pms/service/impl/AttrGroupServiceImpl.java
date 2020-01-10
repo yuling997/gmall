@@ -88,4 +88,16 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
 
     }
 
+    @Override
+    public List<GroupVo> queryGroupVosByCid(Long cid) {
+
+        //根据分类的id查询规格参数组
+        List<AttrGroupEntity> groupEntities = this.list(new QueryWrapper<AttrGroupEntity>().eq("catelog_id", cid));
+
+        //遍历规格参数组查询每个组下中间关系
+        return groupEntities.stream().map(attrGroupEntity -> this.queryGroupVoByGid(attrGroupEntity.getAttrGroupId())).collect(Collectors.toList());
+
+
+    }
+
 }
