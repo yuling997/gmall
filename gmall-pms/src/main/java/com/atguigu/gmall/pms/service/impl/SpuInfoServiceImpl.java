@@ -8,21 +8,16 @@ import com.atguigu.gmall.pms.service.ProductAttrValueService;
 import com.atguigu.gmall.pms.service.SkuImagesService;
 import com.atguigu.gmall.pms.service.SkuSaleAttrValueService;
 import com.atguigu.gmall.pms.vo.BaseAttrValueVo;
-import com.atguigu.gmall.pms.vo.SaleVo;
 import com.atguigu.gmall.pms.vo.SkuInfoVo;
 import com.atguigu.gmall.pms.vo.SpuInfoVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
