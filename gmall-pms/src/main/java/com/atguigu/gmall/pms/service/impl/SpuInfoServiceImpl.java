@@ -4,12 +4,12 @@ import com.alibaba.nacos.client.utils.StringUtils;
 import com.atguigu.gmall.pms.dao.*;
 import com.atguigu.gmall.pms.entity.*;
 import com.atguigu.gmall.pms.feign.GmallSmsClient;
-import com.atguigu.gmall.pms.service.ProductAttrValueService;
-import com.atguigu.gmall.pms.service.SkuImagesService;
-import com.atguigu.gmall.pms.service.SkuSaleAttrValueService;
+import com.atguigu.gmall.pms.service.*;
 import com.atguigu.gmall.pms.vo.BaseAttrValueVo;
 import com.atguigu.gmall.pms.vo.SkuInfoVo;
 import com.atguigu.gmall.pms.vo.SpuInfoVo;
+import com.atguigu.gmall.sms.vo.SaleVo;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,8 @@ import com.atguigu.core.bean.PageVo;
 import com.atguigu.core.bean.Query;
 import com.atguigu.core.bean.QueryCondition;
 
-import com.atguigu.gmall.pms.service.SpuInfoService;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
@@ -50,6 +51,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     private GmallSmsClient smsClient;
+
+    @Autowired
+    private SpuInfoDescService descService;
 
     @Override
     public PageVo queryPage(QueryCondition params) {
@@ -84,42 +88,28 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         return new PageVo(page);
     }
 
+    @GlobalTransactional
     @Override
     public void bigSave(SpuInfoVo spuInfoVo) {
 
         //1.保存spu相关信息
         //1.1 spuInfo
-        spuInfoVo.setCreateTime(new Date());
-        spuInfoVo.setUodateTime(spuInfoVo.getCreateTime());
-        this.save(spuInfoVo);
-        Long spuId = spuInfoVo.getId();
+        Long spuId = saveSpuInfo(spuInfoVo);
 
         //1.2spuInfoDesc spu描述信息
-        List<String> spuImages = spuInfoVo.getSpuImages();
-        if (!CollectionUtils.isEmpty(spuImages)){
-            SpuInfoDescEntity descEntity = new SpuInfoDescEntity();
-            descEntity.setSpuId(spuId);
-            descEntity.setDecript(StringUtils.join(spuImages,","));
-            this.descDao.insert(descEntity);
-        }
+        this.descService.saveSpuDesc(spuInfoVo, spuId);
 
 
         //1.3  基础属性相关信息
-        List<BaseAttrValueVo> baseAttrs = spuInfoVo.getBaseAttrs();
-        if (!CollectionUtils.isEmpty(baseAttrs)){
-            List<ProductAttrValueEntity> attrValues= baseAttrs.stream().map(baseAttrValueVo -> {
-                ProductAttrValueEntity attrValueEntity = new ProductAttrValueEntity();
-                BeanUtils.copyProperties(baseAttrValueVo, attrValueEntity);
-                attrValueEntity.setSpuId(spuId);
-                attrValueEntity.setAttrSort(0);
-                attrValueEntity.setQuickShow(0);
-                return attrValueEntity;
-            }).collect(Collectors.toList());
-            this.attrValueService.saveBatch(attrValues);
-
-        }
+        this.saveBaseAttrValue(spuInfoVo, spuId);
 
         //2. sku相关信息
+        this.saveSkuAndSales(spuInfoVo, spuId);
+
+//        int i = 1/0;
+    }
+
+    private void saveSkuAndSales(SpuInfoVo spuInfoVo, Long spuId) {
         List<SkuInfoVo> skus = spuInfoVo.getSkus();
         if (!CollectionUtils.isEmpty(skus)){
             return;
@@ -171,5 +161,30 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         });
     }
+
+    private void saveBaseAttrValue(SpuInfoVo spuInfoVo, Long spuId) {
+        List<BaseAttrValueVo> baseAttrs = spuInfoVo.getBaseAttrs();
+        if (!CollectionUtils.isEmpty(baseAttrs)){
+            List<ProductAttrValueEntity> attrValues= baseAttrs.stream().map(baseAttrValueVo -> {
+                ProductAttrValueEntity attrValueEntity = new ProductAttrValueEntity();
+                BeanUtils.copyProperties(baseAttrValueVo, attrValueEntity);
+                attrValueEntity.setSpuId(spuId);
+                attrValueEntity.setAttrSort(0);
+                attrValueEntity.setQuickShow(0);
+                return attrValueEntity;
+            }).collect(Collectors.toList());
+            this.attrValueService.saveBatch(attrValues);
+
+        }
+    }
+
+    private Long saveSpuInfo(SpuInfoVo spuInfoVo) {
+        spuInfoVo.setCreateTime(new Date());
+        spuInfoVo.setUodateTime(spuInfoVo.getCreateTime());
+        this.save(spuInfoVo);
+        return spuInfoVo.getId();
+    }
+
+
 
 }

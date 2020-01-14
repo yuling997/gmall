@@ -93,5 +93,4 @@ public class SpuFullReductionController {
 
         return Resp.ok(null);
     }
-
 }
