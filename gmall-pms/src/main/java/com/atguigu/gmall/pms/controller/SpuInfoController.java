@@ -41,6 +41,13 @@ public class SpuInfoController {
         return Resp.ok(pageVo);
     }
 
+    @PostMapping("page")
+    public Resp<PageVo> querySpuByPage(@RequestBody QueryCondition condition){
+        PageVo pageVo = spuInfoService.queryPage(condition);
+
+        return Resp.ok(pageVo);
+    }
+
     /**
      * 列表
      */
